@@ -50,7 +50,7 @@ junk.</p>
         removeEventListener eventProcessor
 
       <span class="keyword">if</span> event.data?.status <span class="keyword">is</span> <span class="string">"ready"</span>
-        send pixelEditorWindow, <span class="string">"fromDataURL"</span>, <span class="string">"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABaUlEQVRYR+2WyxHCMAxEnT6YoQRKoBBqgBNlcIIaKIQSKIEZ+jDeYHmWkGBJAcKBHJjg3z5vJNlNmPhpxuovl9t4Ou3c67gnAhzis8U6HPdz9zruiSIOkMkBrudD8H4GlwO8ezgwOcCYz2B2oLt7ySKvC38AkwNiP+zmB7XAG4xqAIiLaEq53gKaxrTtlpQ0AbBwjDE0zX06vwPiIwB5y8WFIYA0Tr0prGkZHMnip0+Qd25d0w7AAScU0pYLkgnC7EA+/cJqcykupMOo/Me7xVktQGu/7DSLPIj29KvWVg1CoLOAWC0uAOinACyx8DYHICqO5INJFQtagLbe4IdTsRuI0p8Llmpt1SBK+lKIWFz6JTg/kQWFYeg+YPnuXMWsDpSb8FMpTA2eS4kJQE5ErnwM8hUAiEOISzIDWSHUDry6C/YAqFJQPUgqISZ0xbpO8G1Jcy+oOsA3ob7Aq7XVIKoANYGx/ZMD3AAsruMhfeZcmgAAAABJRU5ErkJggg=="</span>
+        send pixelEditorWindow, <span class="string">"fromDataURL"</span>, data
 
   addEventListener <span class="string">"message"</span>, eventProcessor, <span class="literal">false</span>
 
@@ -62,7 +62,21 @@ junk.</p>
     params: params
   , <span class="string">"*"</span>
 
-editSprite()</code></pre>
+<span class="keyword">try</span>
+  sprites = JSON.parse(localStorage.images)
+<span class="keyword">catch</span>
+  sprites = 
+    wizard: <span class="string">"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABaUlEQVRYR+2WyxHCMAxEnT6YoQRKoBBqgBNlcIIaKIQSKIEZ+jDeYHmWkGBJAcKBHJjg3z5vJNlNmPhpxuovl9t4Ou3c67gnAhzis8U6HPdz9zruiSIOkMkBrudD8H4GlwO8ezgwOcCYz2B2oLt7ySKvC38AkwNiP+zmB7XAG4xqAIiLaEq53gKaxrTtlpQ0AbBwjDE0zX06vwPiIwB5y8WFIYA0Tr0prGkZHMnip0+Qd25d0w7AAScU0pYLkgnC7EA+/cJqcykupMOo/Me7xVktQGu/7DSLPIj29KvWVg1CoLOAWC0uAOinACyx8DYHICqO5INJFQtagLbe4IdTsRuI0p8Llmpt1SBK+lKIWFz6JTg/kQWFYeg+YPnuXMWsDpSb8FMpTA2eS4kJQE5ErnwM8hUAiEOISzIDWSHUDry6C/YAqFJQPUgqISZ0xbpO8G1Jcy+oOsA3ob7Aq7XVIKoANYGx/ZMD3AAsruMhfeZcmgAAAABJRU5ErkJggg=="</span>
+
+Object.keys(sprites).forEach (name) -&gt;
+  img = <span class="keyword">new</span> Image
+
+  img.src = sprites[name]
+
+  document.body.appendChild img
+
+$(<span class="string">"body"</span>).<span class="literal">on</span> <span class="string">"dblclick"</span>, <span class="string">"img"</span>, -&gt;
+  editSprite(<span class="keyword">this</span>.src)</code></pre>
 </div>
         </li>
         
