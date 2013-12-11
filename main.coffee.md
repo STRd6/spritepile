@@ -6,13 +6,13 @@ junk.
 
 Edit a sprite by double clicking and opening a pixel editor in a sub-window.
 
-    require "./lib/imagesloaded"
-    require "./lib/dragabilly"
-    require "./lib/packery"
+    require "./setup"
 
     # initialize Packery
     container = document.body
-    packery = new Packery( container )
+    packery = new Packery container,
+      columnWidth: 40
+      rowHeight: 40
 
     # layout Packery after all images have loaded
     imagesLoaded container, ->
@@ -57,7 +57,12 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
       
       document.body.appendChild img
 
-      packery.bindDraggabillyEvents(new Draggabilly( img ))
+      draggie = new Draggabilly img
+      
+      draggie.on "dragEnd", ->
+        console.log arguments
+
+      packery.bindDraggabillyEvents(draggie)
 
     Object.keys(sprites).forEach (name) ->
       addSprite sprites[name]
