@@ -9,38 +9,41 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
     require "./setup"
 
     docReady ->
-      console.log "yolo"
       container = document.querySelector("body")
 
       # layout Packery after all images have loaded
       imagesLoaded container, ->
         packery.layout()
 
-      addSprite = (data) ->
-        item = $ "<div>",
-          class: "item"
-  
-        img = new Image
-        img.src = data
-        item.append img
-        
-        item.appendTo container
-  
-      sprites = require "./images"
-      Object.keys(sprites).forEach (name) ->
-        [0...50].map ->
-          addSprite sprites[name]
-
       packery = new Packery container,
         columnWidth: 40
         rowHeight: 40
 
-      packery.layout()
-
-      packery.getItemElements().forEach (element) ->
+      makeDraggable = (element) ->
         draggie = new Draggabilly element
 
         packery.bindDraggabillyEvents(draggie)
+
+      addToPackery = (item) ->
+        item.appendTo container
+        packery.appended item
+
+        makeDraggable(item.get(0))
+
+      addSprite = (data) ->
+        item = $ "<div>",
+          class: "item"
+
+        img = new Image
+        img.src = data
+        item.append img
+
+        addToPackery(item)
+
+      sprites = require "./images"
+      Object.keys(sprites).forEach (name) ->
+        [0...50].map ->
+          addSprite sprites[name]
 
     # TODO: Close spawned windows when closing parent
 
