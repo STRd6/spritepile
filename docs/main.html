@@ -40,13 +40,17 @@ junk.</p>
             <div class="content"><pre><code class="lang-coffeescript">require <span class="string">"./setup"</span>
 
 <span class="comment"># initialize Packery</span>
-container = document.body
+$(<span class="string">"body"</span>).append $ <span class="string">"&lt;div&gt;"</span>,
+  class: <span class="string">"main"</span>
+
+container = document.querySelector(<span class="string">".main"</span>)
 packery = <span class="keyword">new</span> Packery container,
   columnWidth: <span class="number">40</span>
   rowHeight: <span class="number">40</span>
 
 <span class="comment"># layout Packery after all images have loaded</span>
 imagesLoaded container, -&gt;
+  console.log <span class="string">"images loaded"</span>
   packery.layout()
 
 <span class="comment"># TODO: Close spawned windows when closing parent</span>
@@ -83,13 +87,10 @@ imagesLoaded container, -&gt;
 
 <span class="function"><span class="title">addSprite</span></span> = (data) -&gt;
   img = <span class="keyword">new</span> Image
-
   img.src = data
-
-  document.body.appendChild img
+  container.appendChild img
 
   draggie = <span class="keyword">new</span> Draggabilly img
-
   draggie.<span class="literal">on</span> <span class="string">"dragEnd"</span>, -&gt;
     console.log arguments
 

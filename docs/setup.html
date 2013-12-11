@@ -39,11 +39,26 @@
   Function(PACKAGE.distribution[<span class="string">"lib/<span class="subst">#{name}</span>"</span>].content).call(window)
 
 [
-  <span class="string">"dragabilly"</span>
+  <span class="string">"draggabilly"</span>
   <span class="string">"imagesloaded"</span>
   <span class="string">"packery"</span>
 ].map (name) -&gt;
   include name</code></pre>
+</div>
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              <div class="pilwrap">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Boot runtime</p>
+
+            </div>
+            <div class="content"><pre><code class="lang-coffeescript">runtime = require(<span class="string">"runtime"</span>)(PACKAGE)
+runtime.boot()
+runtime.applyStyleSheet(require(<span class="string">'./style'</span>))</code></pre>
 </div>
         </li>
         
