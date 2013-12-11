@@ -39,17 +39,39 @@ junk.</p>
             </div>
             <div class="content"><pre><code class="lang-coffeescript">require <span class="string">"./setup"</span>
 
+docReady -&gt;
+  console.log <span class="string">"yolo"</span>
+  container = document.querySelector(<span class="string">"body"</span>)
 
-$(<span class="string">"&lt;div&gt;"</span>, class: <span class="string">"main"</span>).appendTo <span class="string">"body"</span>
+  <span class="comment"># layout Packery after all images have loaded</span>
+  imagesLoaded container, -&gt;
+    packery.layout()
 
-container = document.querySelector(<span class="string">".main"</span>)
-packery = <span class="keyword">new</span> Packery container,
-  columnWidth: <span class="number">40</span>
-  rowHeight: <span class="number">40</span>
+  <span class="function"><span class="title">addSprite</span></span> = (data) -&gt;
+    item = $ <span class="string">"&lt;div&gt;"</span>,
+      class: <span class="string">"item"</span>
 
-<span class="comment"># layout Packery after all images have loaded</span>
-imagesLoaded container, -&gt;
+    img = <span class="keyword">new</span> Image
+    img.src = data
+    item.append img
+
+    item.appendTo container
+
+  sprites = require <span class="string">"./images"</span>
+  Object.keys(sprites).forEach (name) -&gt;
+    [<span class="number">0.</span>.<span class="number">.50</span>].map -&gt;
+      addSprite sprites[name]
+
+  packery = <span class="keyword">new</span> Packery container,
+    columnWidth: <span class="number">40</span>
+    rowHeight: <span class="number">40</span>
+
   packery.layout()
+
+  packery.getItemElements().forEach (element) -&gt;
+    draggie = <span class="keyword">new</span> Draggabilly element
+
+    packery.bindDraggabillyEvents(draggie)
 
 <span class="comment"># TODO: Close spawned windows when closing parent</span>
 
@@ -76,32 +98,6 @@ imagesLoaded container, -&gt;
 
 <span class="comment"># TODO: Prepopulate more images</span>
 <span class="comment"># TODO: Save images back</span>
-
-<span class="keyword">try</span>
-  sprites = JSON.parse(localStorage.images)
-<span class="keyword">catch</span>
-  sprites =
-    wizard: <span class="string">"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABaUlEQVRYR+2WyxHCMAxEnT6YoQRKoBBqgBNlcIIaKIQSKIEZ+jDeYHmWkGBJAcKBHJjg3z5vJNlNmPhpxuovl9t4Ou3c67gnAhzis8U6HPdz9zruiSIOkMkBrudD8H4GlwO8ezgwOcCYz2B2oLt7ySKvC38AkwNiP+zmB7XAG4xqAIiLaEq53gKaxrTtlpQ0AbBwjDE0zX06vwPiIwB5y8WFIYA0Tr0prGkZHMnip0+Qd25d0w7AAScU0pYLkgnC7EA+/cJqcykupMOo/Me7xVktQGu/7DSLPIj29KvWVg1CoLOAWC0uAOinACyx8DYHICqO5INJFQtagLbe4IdTsRuI0p8Llmpt1SBK+lKIWFz6JTg/kQWFYeg+YPnuXMWsDpSb8FMpTA2eS4kJQE5ErnwM8hUAiEOISzIDWSHUDry6C/YAqFJQPUgqISZ0xbpO8G1Jcy+oOsA3ob7Aq7XVIKoANYGx/ZMD3AAsruMhfeZcmgAAAABJRU5ErkJggg=="</span>
-
-<span class="function"><span class="title">addSprite</span></span> = (data) -&gt;
-  item = $ <span class="string">"&lt;div&gt;"</span>,
-    class: <span class="string">"item"</span>
-
-  img = <span class="keyword">new</span> Image
-  img.src = data
-  item.append img
-
-  item.appendTo container
-
-  draggie = <span class="keyword">new</span> Draggabilly item.get(<span class="number">0</span>)
-  draggie.<span class="literal">on</span> <span class="string">"dragEnd"</span>, -&gt;
-    console.log arguments
-
-  packery.bindDraggabillyEvents(draggie)
-
-Object.keys(sprites).forEach (name) -&gt;
-  [<span class="number">0.</span>.<span class="number">.50</span>].map -&gt;
-    addSprite sprites[name]
 
 $(<span class="string">"body"</span>).<span class="literal">on</span> <span class="string">"dblclick"</span>, <span class="string">"img"</span>, -&gt;
   editSprite(<span class="keyword">this</span>.src)</code></pre>
