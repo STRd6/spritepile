@@ -9,13 +9,17 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
     require "./setup"
 
     # initialize Packery
-    container = document.body
+    $("body").append $ "<div>",
+      class: "main"
+
+    container = document.querySelector(".main")
     packery = new Packery container,
       columnWidth: 40
       rowHeight: 40
 
     # layout Packery after all images have loaded
     imagesLoaded container, ->
+      console.log "images loaded"
       packery.layout()
 
     # TODO: Close spawned windows when closing parent
@@ -52,13 +56,10 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
 
     addSprite = (data) ->
       img = new Image
-
       img.src = data
-      
-      document.body.appendChild img
+      container.appendChild img
 
       draggie = new Draggabilly img
-      
       draggie.on "dragEnd", ->
         console.log arguments
 
