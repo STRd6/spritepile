@@ -5,7 +5,7 @@ Our libs are shitty and don't feature detect our insane browser environment corr
 
     include = (name) ->
       Function(PACKAGE.distribution["lib/#{name}"].content).call(window)
-    
+
     [
       "draggabilly"
       "imagesloaded"
