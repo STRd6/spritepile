@@ -42,8 +42,7 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
 
       sprites = require "./images"
       Object.keys(sprites).forEach (name) ->
-        [0...50].map ->
-          addSprite sprites[name]
+        addSprite sprites[name]
 
     # TODO: Close spawned windows when closing parent
 
