@@ -37,13 +37,13 @@ junk.</p>
 <p>Edit a sprite by double clicking and opening a pixel editor in a sub-window.</p>
 
             </div>
-            <div class="content"><pre><code class="lang-coffeescript">require <span class="string">"./lib/imagesloaded"</span>
-require <span class="string">"./lib/dragabilly"</span>
-require <span class="string">"./lib/packery"</span>
+            <div class="content"><pre><code class="lang-coffeescript">require <span class="string">"./setup"</span>
 
 <span class="comment"># initialize Packery</span>
 container = document.body
-packery = <span class="keyword">new</span> Packery( container )
+packery = <span class="keyword">new</span> Packery container,
+  columnWidth: <span class="number">40</span>
+  rowHeight: <span class="number">40</span>
 
 <span class="comment"># layout Packery after all images have loaded</span>
 imagesLoaded container, -&gt;
@@ -88,7 +88,12 @@ imagesLoaded container, -&gt;
 
   document.body.appendChild img
 
-  packery.bindDraggabillyEvents(<span class="keyword">new</span> Draggabilly( img ))
+  draggie = <span class="keyword">new</span> Draggabilly img
+
+  draggie.<span class="literal">on</span> <span class="string">"dragEnd"</span>, -&gt;
+    console.log arguments
+
+  packery.bindDraggabillyEvents(draggie)
 
 Object.keys(sprites).forEach (name) -&gt;
   addSprite sprites[name]
