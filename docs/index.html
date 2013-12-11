@@ -40,12 +40,26 @@ junk.</p>
             <div class="content"><pre><code class="lang-coffeescript">require <span class="string">"./setup"</span>
 
 docReady -&gt;
-  console.log <span class="string">"yolo"</span>
   container = document.querySelector(<span class="string">"body"</span>)
 
   <span class="comment"># layout Packery after all images have loaded</span>
   imagesLoaded container, -&gt;
     packery.layout()
+
+  packery = <span class="keyword">new</span> Packery container,
+    columnWidth: <span class="number">40</span>
+    rowHeight: <span class="number">40</span>
+
+  <span class="function"><span class="title">makeDraggable</span></span> = (element) -&gt;
+    draggie = <span class="keyword">new</span> Draggabilly element
+
+    packery.bindDraggabillyEvents(draggie)
+
+  <span class="function"><span class="title">addToPackery</span></span> = (item) -&gt;
+    item.appendTo container
+    packery.appended item
+
+    makeDraggable(item.get(<span class="number">0</span>))
 
   <span class="function"><span class="title">addSprite</span></span> = (data) -&gt;
     item = $ <span class="string">"&lt;div&gt;"</span>,
@@ -55,23 +69,12 @@ docReady -&gt;
     img.src = data
     item.append img
 
-    item.appendTo container
+    addToPackery(item)
 
   sprites = require <span class="string">"./images"</span>
   Object.keys(sprites).forEach (name) -&gt;
     [<span class="number">0.</span>.<span class="number">.50</span>].map -&gt;
       addSprite sprites[name]
-
-  packery = <span class="keyword">new</span> Packery container,
-    columnWidth: <span class="number">40</span>
-    rowHeight: <span class="number">40</span>
-
-  packery.layout()
-
-  packery.getItemElements().forEach (element) -&gt;
-    draggie = <span class="keyword">new</span> Draggabilly element
-
-    packery.bindDraggabillyEvents(draggie)
 
 <span class="comment"># TODO: Close spawned windows when closing parent</span>
 
