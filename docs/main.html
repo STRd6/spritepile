@@ -37,7 +37,17 @@ junk.</p>
 <p>Edit a sprite by double clicking and opening a pixel editor in a sub-window.</p>
 
             </div>
-            <div class="content"><pre><code class="lang-coffeescript">require <span class="string">"./lib/dragabilly"</span>
+            <div class="content"><pre><code class="lang-coffeescript">require <span class="string">"./lib/imagesloaded"</span>
+require <span class="string">"./lib/dragabilly"</span>
+require <span class="string">"./lib/packery"</span>
+
+<span class="comment"># initialize Packery</span>
+container = document.body
+packery = <span class="keyword">new</span> Packery( container )
+
+<span class="comment"># layout Packery after all images have loaded</span>
+imagesLoaded container, -&gt;
+  packery.layout()
 
 <span class="comment"># TODO: Close spawned windows when closing parent</span>
 
@@ -62,18 +72,26 @@ junk.</p>
     params: params
   , <span class="string">"*"</span>
 
+<span class="comment"># TODO: Prepopulate more images</span>
+<span class="comment"># TODO: Save images back</span>
+
 <span class="keyword">try</span>
   sprites = JSON.parse(localStorage.images)
 <span class="keyword">catch</span>
   sprites = 
     wizard: <span class="string">"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABaUlEQVRYR+2WyxHCMAxEnT6YoQRKoBBqgBNlcIIaKIQSKIEZ+jDeYHmWkGBJAcKBHJjg3z5vJNlNmPhpxuovl9t4Ou3c67gnAhzis8U6HPdz9zruiSIOkMkBrudD8H4GlwO8ezgwOcCYz2B2oLt7ySKvC38AkwNiP+zmB7XAG4xqAIiLaEq53gKaxrTtlpQ0AbBwjDE0zX06vwPiIwB5y8WFIYA0Tr0prGkZHMnip0+Qd25d0w7AAScU0pYLkgnC7EA+/cJqcykupMOo/Me7xVktQGu/7DSLPIj29KvWVg1CoLOAWC0uAOinACyx8DYHICqO5INJFQtagLbe4IdTsRuI0p8Llmpt1SBK+lKIWFz6JTg/kQWFYeg+YPnuXMWsDpSb8FMpTA2eS4kJQE5ErnwM8hUAiEOISzIDWSHUDry6C/YAqFJQPUgqISZ0xbpO8G1Jcy+oOsA3ob7Aq7XVIKoANYGx/ZMD3AAsruMhfeZcmgAAAABJRU5ErkJggg=="</span>
 
-Object.keys(sprites).forEach (name) -&gt;
+<span class="function"><span class="title">addSprite</span></span> = (data) -&gt;
   img = <span class="keyword">new</span> Image
 
-  img.src = sprites[name]
+  img.src = data
 
   document.body.appendChild img
+
+  packery.bindDraggabillyEvents(<span class="keyword">new</span> Draggabilly( img ))
+
+Object.keys(sprites).forEach (name) -&gt;
+  addSprite sprites[name]
 
 $(<span class="string">"body"</span>).<span class="literal">on</span> <span class="string">"dblclick"</span>, <span class="string">"img"</span>, -&gt;
   editSprite(<span class="keyword">this</span>.src)</code></pre>
