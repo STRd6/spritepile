@@ -90,10 +90,10 @@ docReady -&gt;
         img.src = dataURL
 
       <span class="keyword">if</span> event.data?.status <span class="keyword">is</span> <span class="string">"ready"</span>
-        send pixelEditorWindow, <span class="string">"fromDataURL"</span>, img.src
         send pixelEditorWindow, <span class="string">"eval"</span>, CoffeeScript.compile <span class="string">"""
+          self.fromDataURL <span class="subst">#{JSON.stringify img.src}</span>
           self.on "change", -&gt;
-            self.sendToParent 
+            self.sendToParent
               dataURL: self.outputCanvas().toDataURL("image/png")
         """</span>, bare: <span class="literal">true</span>
 
