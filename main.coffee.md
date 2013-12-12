@@ -7,10 +7,37 @@ junk.
 Edit a sprite by double clicking and opening a pixel editor in a sub-window.
 
     require "./setup"
+    
+    transparent32x32 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAALUlEQVRYR+3QQREAAAABQfqXFsNnFTizzXk99+MAAQIECBAgQIAAAQIECBAgMBo/ACHo7lH9AAAAAElFTkSuQmCC"
+
+    $("body").append $ "<button>",
+      text: "New Sprite"
+      click: ->
+        editSprite addSprite transparent32x32
+
+    packery = null
+    container = document.querySelector("body")
+
+    makeDraggable = (element) ->
+      draggie = new Draggabilly element
+
+      packery.bindDraggabillyEvents(draggie)
+
+    addToPackery = (item) ->
+      container.appendChild item
+      packery.appended item
+
+      makeDraggable item
+
+    addSprite = (data) ->
+      img = new Image
+      img.src = data
+
+      addToPackery(img)
+      
+      return img
 
     docReady ->
-      container = document.querySelector("body")
-
       # layout Packery after all images have loaded
       imagesLoaded container, ->
         packery.layout()
@@ -18,27 +45,8 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
       packery = new Packery container,
         columnWidth: 40
         rowHeight: 40
-
-      makeDraggable = (element) ->
-        draggie = new Draggabilly element
-
-        packery.bindDraggabillyEvents(draggie)
-
-      addToPackery = (item) ->
-        item.appendTo container
-        packery.appended item
-
-        makeDraggable(item.get(0))
-
-      addSprite = (data) ->
-        item = $ "<div>",
-          class: "item"
-
-        img = new Image
-        img.src = data
-        item.append img
-
-        addToPackery(item)
+        item: "img"
+        stamp: "button"
 
       sprites = require "./images"
       Object.keys(sprites).forEach (name) ->
