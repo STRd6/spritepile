@@ -77,7 +77,7 @@ docReady -&gt;
 
 <span class="comment"># TODO: Close spawned windows when closing parent</span>
 
-<span class="function"><span class="title">editSprite</span></span> = (data) -&gt;
+<span class="function"><span class="title">editSprite</span></span> = (img) -&gt;
   <span class="function"><span class="title">eventProcessor</span></span> = (event) -&gt;
     <span class="keyword">if</span> event.source <span class="keyword">is</span> pixelEditorWindow
       console.log event
@@ -85,8 +85,17 @@ docReady -&gt;
       <span class="keyword">if</span> event.data?.status <span class="keyword">is</span> <span class="string">"unload"</span>
         removeEventListener eventProcessor
 
+      <span class="keyword">if</span> dataURL = event.data?.dataURL
+        <span class="comment"># TODO: Save to localStorage</span>
+        img.src = dataURL
+
       <span class="keyword">if</span> event.data?.status <span class="keyword">is</span> <span class="string">"ready"</span>
-        send pixelEditorWindow, <span class="string">"fromDataURL"</span>, data
+        send pixelEditorWindow, <span class="string">"fromDataURL"</span>, img.src
+        send pixelEditorWindow, <span class="string">"eval"</span>, CoffeeScript.compile <span class="string">"""
+          self.on "change", -&gt;
+            self.sendToParent 
+              dataURL: self.outputCanvas().toDataURL("image/png")
+        """</span>, bare: <span class="literal">true</span>
 
   addEventListener <span class="string">"message"</span>, eventProcessor, <span class="literal">false</span>
 
@@ -98,11 +107,8 @@ docReady -&gt;
     params: params
   , <span class="string">"*"</span>
 
-<span class="comment"># TODO: Prepopulate more images</span>
-<span class="comment"># TODO: Save images back</span>
-
 $(<span class="string">"body"</span>).<span class="literal">on</span> <span class="string">"dblclick"</span>, <span class="string">"img"</span>, -&gt;
-  editSprite(<span class="keyword">this</span>.src)</code></pre>
+  editSprite(<span class="keyword">this</span>)</code></pre>
 </div>
         </li>
         
