@@ -39,9 +39,36 @@ junk.</p>
             </div>
             <div class="content"><pre><code class="lang-coffeescript">require <span class="string">"./setup"</span>
 
-docReady -&gt;
-  container = document.querySelector(<span class="string">"body"</span>)
+transparent32x32 = <span class="string">"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAALUlEQVRYR+3QQREAAAABQfqXFsNnFTizzXk99+MAAQIECBAgQIAAAQIECBAgMBo/ACHo7lH9AAAAAElFTkSuQmCC"</span>
 
+$(<span class="string">"body"</span>).append $ <span class="string">"&lt;button&gt;"</span>,
+  text: <span class="string">"New Sprite"</span>
+  click: -&gt;
+    editSprite addSprite transparent32x32
+
+packery = <span class="literal">null</span>
+container = document.querySelector(<span class="string">"body"</span>)
+
+<span class="function"><span class="title">makeDraggable</span></span> = (element) -&gt;
+  draggie = <span class="keyword">new</span> Draggabilly element
+
+  packery.bindDraggabillyEvents(draggie)
+
+<span class="function"><span class="title">addToPackery</span></span> = (item) -&gt;
+  container.appendChild item
+  packery.appended item
+
+  makeDraggable item
+
+<span class="function"><span class="title">addSprite</span></span> = (data) -&gt;
+  img = <span class="keyword">new</span> Image
+  img.src = data
+
+  addToPackery(img)
+
+  <span class="keyword">return</span> img
+
+docReady -&gt;
   <span class="comment"># layout Packery after all images have loaded</span>
   imagesLoaded container, -&gt;
     packery.layout()
@@ -49,27 +76,8 @@ docReady -&gt;
   packery = <span class="keyword">new</span> Packery container,
     columnWidth: <span class="number">40</span>
     rowHeight: <span class="number">40</span>
-
-  <span class="function"><span class="title">makeDraggable</span></span> = (element) -&gt;
-    draggie = <span class="keyword">new</span> Draggabilly element
-
-    packery.bindDraggabillyEvents(draggie)
-
-  <span class="function"><span class="title">addToPackery</span></span> = (item) -&gt;
-    item.appendTo container
-    packery.appended item
-
-    makeDraggable(item.get(<span class="number">0</span>))
-
-  <span class="function"><span class="title">addSprite</span></span> = (data) -&gt;
-    item = $ <span class="string">"&lt;div&gt;"</span>,
-      class: <span class="string">"item"</span>
-
-    img = <span class="keyword">new</span> Image
-    img.src = data
-    item.append img
-
-    addToPackery(item)
+    item: <span class="string">"img"</span>
+    stamp: <span class="string">"button"</span>
 
   sprites = require <span class="string">"./images"</span>
   Object.keys(sprites).forEach (name) -&gt;
