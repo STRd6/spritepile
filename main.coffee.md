@@ -59,10 +59,10 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
             img.src = dataURL
 
           if event.data?.status is "ready"
-            send pixelEditorWindow, "fromDataURL", img.src
             send pixelEditorWindow, "eval", CoffeeScript.compile """
+              self.fromDataURL #{JSON.stringify img.src}
               self.on "change", ->
-                self.sendToParent 
+                self.sendToParent
                   dataURL: self.outputCanvas().toDataURL("image/png")
             """, bare: true
 
