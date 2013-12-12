@@ -46,7 +46,7 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
 
     # TODO: Close spawned windows when closing parent
 
-    editSprite = (data) ->
+    editSprite = (img) ->
       eventProcessor = (event) ->
         if event.source is pixelEditorWindow
           console.log event
@@ -54,8 +54,17 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
           if event.data?.status is "unload"
             removeEventListener eventProcessor
 
+          if dataURL = event.data?.dataURL
+            # TODO: Save to localStorage
+            img.src = dataURL
+
           if event.data?.status is "ready"
-            send pixelEditorWindow, "fromDataURL", data
+            send pixelEditorWindow, "fromDataURL", img.src
+            send pixelEditorWindow, "eval", CoffeeScript.compile """
+              self.on "change", ->
+                self.sendToParent 
+                  dataURL: self.outputCanvas().toDataURL("image/png")
+            """, bare: true
 
       addEventListener "message", eventProcessor, false
 
@@ -67,8 +76,5 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
         params: params
       , "*"
 
-    # TODO: Prepopulate more images
-    # TODO: Save images back
-
     $("body").on "dblclick", "img", ->
-      editSprite(this.src)
+      editSprite(this)
