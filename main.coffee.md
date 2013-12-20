@@ -7,7 +7,7 @@ junk.
 Edit a sprite by double clicking and opening a pixel editor in a sub-window.
 
     require "./setup"
-    
+
     transparent32x32 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAALUlEQVRYR+3QQREAAAABQfqXFsNnFTizzXk99+MAAQIECBAgQIAAAQIECBAgMBo/ACHo7lH9AAAAAElFTkSuQmCC"
 
     $("body").append $ "<button>",
@@ -34,7 +34,7 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
       img.src = data
 
       addToPackery(img)
-      
+
       return img
 
     docReady ->
