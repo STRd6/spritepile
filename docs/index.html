@@ -60,9 +60,10 @@ container = document.querySelector(<span class="string">"body"</span>)
 
   makeDraggable item
 
-<span class="function"><span class="title">addSprite</span></span> = (data) -&gt;
+<span class="function"><span class="title">addSprite</span></span> = (data, name) -&gt;
   img = <span class="keyword">new</span> Image
   img.src = data
+  img.title = name
 
   addToPackery(img)
 
@@ -81,7 +82,7 @@ docReady -&gt;
 
   sprites = require <span class="string">"./images"</span>
   Object.keys(sprites).forEach (name) -&gt;
-    addSprite sprites[name]
+    addSprite sprites[name], name
 
 <span class="comment"># TODO: Close spawned windows when closing parent</span>
 
