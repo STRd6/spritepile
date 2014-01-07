@@ -29,9 +29,10 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
 
       makeDraggable item
 
-    addSprite = (data) ->
+    addSprite = (data, name) ->
       img = new Image
       img.src = data
+      img.title = name
 
       addToPackery(img)
 
@@ -50,7 +51,7 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
 
       sprites = require "./images"
       Object.keys(sprites).forEach (name) ->
-        addSprite sprites[name]
+        addSprite sprites[name], name
 
     # TODO: Close spawned windows when closing parent
 
