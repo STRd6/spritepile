@@ -42,13 +42,13 @@
     "main.coffee.md": {
       "path": "main.coffee.md",
       "mode": "100644",
-      "content": "Sprite Pile\n===========\n\nDisplay a collection of sprites. Maybe have metadata like a name or some other\njunk.\n\nEdit a sprite by double clicking and opening a pixel editor in a sub-window.\n\n    require \"./setup\"\n\n    transparent32x32 = \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAALUlEQVRYR+3QQREAAAABQfqXFsNnFTizzXk99+MAAQIECBAgQIAAAQIECBAgMBo/ACHo7lH9AAAAAElFTkSuQmCC\"\n\n    $(\"body\").append $ \"<button>\",\n      text: \"New Sprite\"\n      click: ->\n        editSprite addSprite transparent32x32\n\n    packery = null\n    container = document.querySelector(\"body\")\n\n    makeDraggable = (element) ->\n      draggie = new Draggabilly element\n\n      packery.bindDraggabillyEvents(draggie)\n\n    addToPackery = (item) ->\n      container.appendChild item\n      packery.appended item\n\n      makeDraggable item\n\n    addSprite = (data, name) ->\n      img = new Image\n      img.src = data\n      img.title = name\n\n      addToPackery(img)\n\n      return img\n\n    docReady ->\n      # layout Packery after all images have loaded\n      imagesLoaded container, ->\n        packery.layout()\n\n      packery = new Packery container,\n        columnWidth: 40\n        rowHeight: 40\n        item: \"img\"\n        stamp: \"button\"\n\n      sprites = require \"./images\"\n      Object.keys(sprites).forEach (name) ->\n        addSprite sprites[name], name\n\n    # TODO: Close spawned windows when closing parent\n\n    editSprite = (img) ->\n      eventProcessor = (event) ->\n        if event.source is pixelEditorWindow\n          console.log event\n\n          if event.data?.status is \"unload\"\n            removeEventListener eventProcessor\n\n          if dataURL = event.data?.dataURL\n            # TODO: Save to localStorage\n            img.src = dataURL\n\n          if event.data?.status is \"ready\"\n            send pixelEditorWindow, \"eval\", CoffeeScript.compile \"\"\"\n              self.fromDataURL #{JSON.stringify img.src}\n              self.on \"change\", ->\n                self.sendToParent\n                  dataURL: self.outputCanvas().toDataURL(\"image/png\")\n            \"\"\", bare: true\n\n      addEventListener \"message\", eventProcessor, false\n\n      pixelEditorWindow = window.open \"http://strd6.github.io/pixel-editor/\", \"\", \"width=640,height=480\"\n\n    send = (target, method, params...) ->\n      target.postMessage\n        method: method\n        params: params\n      , \"*\"\n\n    $(\"body\").on \"dblclick\", \"img\", ->\n      editSprite(this)\n",
+      "content": "Sprite Pile\n===========\n\nDisplay a collection of sprites. Maybe have metadata like a name or some other\njunk.\n\nEdit a sprite by double clicking and opening a pixel editor in a sub-window.\n\n    require \"./setup\"\n    Postmaster = require \"postmaster\"\n\n    transparent32x32 = \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAALUlEQVRYR+3QQREAAAABQfqXFsNnFTizzXk99+MAAQIECBAgQIAAAQIECBAgMBo/ACHo7lH9AAAAAElFTkSuQmCC\"\n\n    # TODO: Name new sprites\n\n    $(\"body\").append $ \"<button>\",\n      text: \"New Sprite\"\n      click: ->\n        editSprite addSprite transparent32x32\n\n    toJSON = ->\n      $(\"img\").get().reduce (output, img) ->\n        output[img.title] = img.src\n\n        output\n      , {}\n\n    # External Interface\n    Postmaster {},\n      toJSON: toJSON\n\n    packery = null\n    container = document.querySelector(\"body\")\n\n    makeDraggable = (element) ->\n      draggie = new Draggabilly element\n\n      packery.bindDraggabillyEvents(draggie)\n\n    addToPackery = (item) ->\n      container.appendChild item\n      packery.appended item\n\n      makeDraggable item\n\n    addSprite = (data, name) ->\n      img = new Image\n      img.src = data\n      img.title = name\n\n      addToPackery(img)\n\n      return img\n\n    docReady ->\n      # layout Packery after all images have loaded\n      imagesLoaded container, ->\n        packery.layout()\n\n      packery = new Packery container,\n        columnWidth: 40\n        rowHeight: 40\n        item: \"img\"\n        stamp: \"button\"\n\n      sprites = require \"./images\"\n      Object.keys(sprites).forEach (name) ->\n        addSprite sprites[name], name\n\n    # TODO: Close spawned windows when closing parent\n\n    editSprite = (img) ->\n      eventProcessor = (event) ->\n        if event.source is pixelEditorWindow\n          console.log event\n\n          if event.data?.status is \"unload\"\n            removeEventListener eventProcessor\n\n          if dataURL = event.data?.dataURL\n            img.src = dataURL\n\n          if event.data?.status is \"ready\"\n            send pixelEditorWindow, \"eval\", CoffeeScript.compile \"\"\"\n              self.fromDataURL #{JSON.stringify img.src}\n              self.on \"change\", ->\n                self.sendToParent\n                  dataURL: self.outputCanvas().toDataURL(\"image/png\")\n\n              true\n            \"\"\", bare: true\n\n      addEventListener \"message\", eventProcessor, false\n\n      pixelEditorWindow = window.open \"http://strd6.github.io/pixel-editor/?2\", \"\", \"width=640,height=480\"\n\n    sendId = 0\n    send = (target, method, params...) ->\n      console.log arguments\n\n      target.postMessage\n        id: ++sendId\n        method: method\n        params: params\n      , \"*\"\n\n    $(\"body\").on \"dblclick\", \"img\", ->\n      editSprite(this)\n",
       "type": "blob"
     },
     "pixie.cson": {
       "path": "pixie.cson",
       "mode": "100644",
-      "content": "version: \"0.1.0\"\nremoteDependencies: [\n  \"https://code.jquery.com/jquery-1.10.1.min.js\"\n  \"https://cdnjs.cloudflare.com/ajax/libs/coffee-script/1.6.3/coffee-script.min.js\"\n  \"https://pixipaint.net/envweb-v0.4.7.js\"\n]\ndependencies:\n  appcache: \"distri/appcache:v0.2.0\"\n  \"hotkeys\": \"distri/hotkeys:v0.2.0\"\n  \"jquery-utils\": \"distri/jquery-utils:v0.2.0\"\n  runtime: \"STRd6/runtime:v0.2.0\"\n  \"touch-canvas\": \"distri/touch-canvas:v0.3.0\"\n  \"undo\": \"distri/undo:v0.2.0\"\n",
+      "content": "version: \"0.1.0\"\nremoteDependencies: [\n  \"https://code.jquery.com/jquery-1.10.1.min.js\"\n  \"https://cdnjs.cloudflare.com/ajax/libs/coffee-script/1.6.3/coffee-script.min.js\"\n  \"https://pixipaint.net/envweb-v0.4.7.js\"\n]\ndependencies:\n  appcache: \"distri/appcache:v0.2.0\"\n  \"hotkeys\": \"distri/hotkeys:v0.2.0\"\n  \"jquery-utils\": \"distri/jquery-utils:v0.2.0\"\n  postmaster: \"distri/postmaster:v0.1.0\"\n  runtime: \"STRd6/runtime:v0.2.0\"\n  \"touch-canvas\": \"distri/touch-canvas:v0.3.0\"\n  \"undo\": \"distri/undo:v0.2.0\"\n",
       "type": "blob"
     },
     "setup.coffee.md": {
@@ -87,12 +87,12 @@
     },
     "main": {
       "path": "main",
-      "content": "(function() {\n  var addSprite, addToPackery, container, editSprite, makeDraggable, packery, send, transparent32x32,\n    __slice = [].slice;\n\n  require(\"./setup\");\n\n  transparent32x32 = \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAALUlEQVRYR+3QQREAAAABQfqXFsNnFTizzXk99+MAAQIECBAgQIAAAQIECBAgMBo/ACHo7lH9AAAAAElFTkSuQmCC\";\n\n  $(\"body\").append($(\"<button>\", {\n    text: \"New Sprite\",\n    click: function() {\n      return editSprite(addSprite(transparent32x32));\n    }\n  }));\n\n  packery = null;\n\n  container = document.querySelector(\"body\");\n\n  makeDraggable = function(element) {\n    var draggie;\n    draggie = new Draggabilly(element);\n    return packery.bindDraggabillyEvents(draggie);\n  };\n\n  addToPackery = function(item) {\n    container.appendChild(item);\n    packery.appended(item);\n    return makeDraggable(item);\n  };\n\n  addSprite = function(data, name) {\n    var img;\n    img = new Image;\n    img.src = data;\n    img.title = name;\n    addToPackery(img);\n    return img;\n  };\n\n  docReady(function() {\n    var sprites;\n    imagesLoaded(container, function() {\n      return packery.layout();\n    });\n    packery = new Packery(container, {\n      columnWidth: 40,\n      rowHeight: 40,\n      item: \"img\",\n      stamp: \"button\"\n    });\n    sprites = require(\"./images\");\n    return Object.keys(sprites).forEach(function(name) {\n      return addSprite(sprites[name], name);\n    });\n  });\n\n  editSprite = function(img) {\n    var eventProcessor, pixelEditorWindow;\n    eventProcessor = function(event) {\n      var dataURL, _ref, _ref1, _ref2;\n      if (event.source === pixelEditorWindow) {\n        console.log(event);\n        if (((_ref = event.data) != null ? _ref.status : void 0) === \"unload\") {\n          removeEventListener(eventProcessor);\n        }\n        if (dataURL = (_ref1 = event.data) != null ? _ref1.dataURL : void 0) {\n          img.src = dataURL;\n        }\n        if (((_ref2 = event.data) != null ? _ref2.status : void 0) === \"ready\") {\n          return send(pixelEditorWindow, \"eval\", CoffeeScript.compile(\"self.fromDataURL \" + (JSON.stringify(img.src)) + \"\\nself.on \\\"change\\\", ->\\n  self.sendToParent\\n    dataURL: self.outputCanvas().toDataURL(\\\"image/png\\\")\", {\n            bare: true\n          }));\n        }\n      }\n    };\n    addEventListener(\"message\", eventProcessor, false);\n    return pixelEditorWindow = window.open(\"http://strd6.github.io/pixel-editor/\", \"\", \"width=640,height=480\");\n  };\n\n  send = function() {\n    var method, params, target;\n    target = arguments[0], method = arguments[1], params = 3 <= arguments.length ? __slice.call(arguments, 2) : [];\n    return target.postMessage({\n      method: method,\n      params: params\n    }, \"*\");\n  };\n\n  $(\"body\").on(\"dblclick\", \"img\", function() {\n    return editSprite(this);\n  });\n\n}).call(this);\n\n//# sourceURL=main.coffee",
+      "content": "(function() {\n  var Postmaster, addSprite, addToPackery, container, editSprite, makeDraggable, packery, send, sendId, toJSON, transparent32x32,\n    __slice = [].slice;\n\n  require(\"./setup\");\n\n  Postmaster = require(\"postmaster\");\n\n  transparent32x32 = \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAALUlEQVRYR+3QQREAAAABQfqXFsNnFTizzXk99+MAAQIECBAgQIAAAQIECBAgMBo/ACHo7lH9AAAAAElFTkSuQmCC\";\n\n  $(\"body\").append($(\"<button>\", {\n    text: \"New Sprite\",\n    click: function() {\n      return editSprite(addSprite(transparent32x32));\n    }\n  }));\n\n  toJSON = function() {\n    return $(\"img\").get().reduce(function(output, img) {\n      output[img.title] = img.src;\n      return output;\n    }, {});\n  };\n\n  Postmaster({}, {\n    toJSON: toJSON\n  });\n\n  packery = null;\n\n  container = document.querySelector(\"body\");\n\n  makeDraggable = function(element) {\n    var draggie;\n    draggie = new Draggabilly(element);\n    return packery.bindDraggabillyEvents(draggie);\n  };\n\n  addToPackery = function(item) {\n    container.appendChild(item);\n    packery.appended(item);\n    return makeDraggable(item);\n  };\n\n  addSprite = function(data, name) {\n    var img;\n    img = new Image;\n    img.src = data;\n    img.title = name;\n    addToPackery(img);\n    return img;\n  };\n\n  docReady(function() {\n    var sprites;\n    imagesLoaded(container, function() {\n      return packery.layout();\n    });\n    packery = new Packery(container, {\n      columnWidth: 40,\n      rowHeight: 40,\n      item: \"img\",\n      stamp: \"button\"\n    });\n    sprites = require(\"./images\");\n    return Object.keys(sprites).forEach(function(name) {\n      return addSprite(sprites[name], name);\n    });\n  });\n\n  editSprite = function(img) {\n    var eventProcessor, pixelEditorWindow;\n    eventProcessor = function(event) {\n      var dataURL, _ref, _ref1, _ref2;\n      if (event.source === pixelEditorWindow) {\n        console.log(event);\n        if (((_ref = event.data) != null ? _ref.status : void 0) === \"unload\") {\n          removeEventListener(eventProcessor);\n        }\n        if (dataURL = (_ref1 = event.data) != null ? _ref1.dataURL : void 0) {\n          img.src = dataURL;\n        }\n        if (((_ref2 = event.data) != null ? _ref2.status : void 0) === \"ready\") {\n          return send(pixelEditorWindow, \"eval\", CoffeeScript.compile(\"self.fromDataURL \" + (JSON.stringify(img.src)) + \"\\nself.on \\\"change\\\", ->\\n  self.sendToParent\\n    dataURL: self.outputCanvas().toDataURL(\\\"image/png\\\")\\n\\ntrue\", {\n            bare: true\n          }));\n        }\n      }\n    };\n    addEventListener(\"message\", eventProcessor, false);\n    return pixelEditorWindow = window.open(\"http://strd6.github.io/pixel-editor/?2\", \"\", \"width=640,height=480\");\n  };\n\n  sendId = 0;\n\n  send = function() {\n    var method, params, target;\n    target = arguments[0], method = arguments[1], params = 3 <= arguments.length ? __slice.call(arguments, 2) : [];\n    console.log(arguments);\n    return target.postMessage({\n      id: ++sendId,\n      method: method,\n      params: params\n    }, \"*\");\n  };\n\n  $(\"body\").on(\"dblclick\", \"img\", function() {\n    return editSprite(this);\n  });\n\n}).call(this);\n\n//# sourceURL=main.coffee",
       "type": "blob"
     },
     "pixie": {
       "path": "pixie",
-      "content": "module.exports = {\"version\":\"0.1.0\",\"remoteDependencies\":[\"https://code.jquery.com/jquery-1.10.1.min.js\",\"https://cdnjs.cloudflare.com/ajax/libs/coffee-script/1.6.3/coffee-script.min.js\",\"https://pixipaint.net/envweb-v0.4.7.js\"],\"dependencies\":{\"appcache\":\"distri/appcache:v0.2.0\",\"hotkeys\":\"distri/hotkeys:v0.2.0\",\"jquery-utils\":\"distri/jquery-utils:v0.2.0\",\"runtime\":\"STRd6/runtime:v0.2.0\",\"touch-canvas\":\"distri/touch-canvas:v0.3.0\",\"undo\":\"distri/undo:v0.2.0\"}};",
+      "content": "module.exports = {\"version\":\"0.1.0\",\"remoteDependencies\":[\"https://code.jquery.com/jquery-1.10.1.min.js\",\"https://cdnjs.cloudflare.com/ajax/libs/coffee-script/1.6.3/coffee-script.min.js\",\"https://pixipaint.net/envweb-v0.4.7.js\"],\"dependencies\":{\"appcache\":\"distri/appcache:v0.2.0\",\"hotkeys\":\"distri/hotkeys:v0.2.0\",\"jquery-utils\":\"distri/jquery-utils:v0.2.0\",\"postmaster\":\"distri/postmaster:v0.1.0\",\"runtime\":\"STRd6/runtime:v0.2.0\",\"touch-canvas\":\"distri/touch-canvas:v0.3.0\",\"undo\":\"distri/undo:v0.2.0\"}};",
       "type": "blob"
     },
     "setup": {
@@ -180,14 +180,14 @@
     "labels_url": "https://api.github.com/repos/STRd6/spritepile/labels{/name}",
     "releases_url": "https://api.github.com/repos/STRd6/spritepile/releases{/id}",
     "created_at": "2013-12-10T20:20:02Z",
-    "updated_at": "2013-12-20T02:35:41Z",
-    "pushed_at": "2013-12-20T02:35:40Z",
+    "updated_at": "2014-01-07T19:13:48Z",
+    "pushed_at": "2014-01-07T19:13:46Z",
     "git_url": "git://github.com/STRd6/spritepile.git",
     "ssh_url": "git@github.com:STRd6/spritepile.git",
     "clone_url": "https://github.com/STRd6/spritepile.git",
     "svn_url": "https://github.com/STRd6/spritepile",
     "homepage": null,
-    "size": 976,
+    "size": 676,
     "stargazers_count": 0,
     "watchers_count": 0,
     "language": "JavaScript",
@@ -1119,6 +1119,178 @@
           "dependencies": {}
         }
       }
+    },
+    "postmaster": {
+      "source": {
+        "LICENSE": {
+          "path": "LICENSE",
+          "mode": "100644",
+          "content": "The MIT License (MIT)\n\nCopyright (c) 2013 distri\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of\nthis software and associated documentation files (the \"Software\"), to deal in\nthe Software without restriction, including without limitation the rights to\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\nthe Software, and to permit persons to whom the Software is furnished to do so,\nsubject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\nFOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\nCONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n",
+          "type": "blob"
+        },
+        "README.md": {
+          "path": "README.md",
+          "mode": "100644",
+          "content": "postmaster\n==========\n\nSend and receive postMessage commands.\n",
+          "type": "blob"
+        },
+        "pixie.cson": {
+          "path": "pixie.cson",
+          "mode": "100644",
+          "content": "version: \"0.1.0\"\n",
+          "type": "blob"
+        },
+        "main.coffee.md": {
+          "path": "main.coffee.md",
+          "mode": "100644",
+          "content": "Postmaster\n==========\n\nPostmaster allows a child window that was opened from a parent window to\nreceive method calls from the parent window through the postMessage events.\n\nBind postMessage events to methods.\n\n    module.exports = (I={}, self={}) ->\n      # Only listening to messages from `opener`\n      addEventListener \"message\", (event) ->\n        if event.source is opener\n          {method, params, id} = event.data\n\n          try\n            result = self[method](params...)\n\n            send\n              success:\n                id: id\n                result: result\n          catch error\n            send\n              error:\n                id: id\n                result: error\n\n      addEventListener \"unload\", ->\n        send\n          status: \"unload\"\n\n      # Tell our opener that we're ready\n      send\n        status: \"ready\"\n\n      self.sendToParent = send\n\n      return self\n\n    send = (data) ->\n      opener?.postMessage data, \"*\"\n",
+          "type": "blob"
+        },
+        "test/postmaster.coffee": {
+          "path": "test/postmaster.coffee",
+          "mode": "100644",
+          "content": "Postmaster = require \"../main\"\n\ndescribe \"Postmaster\", ->\n  it \"should allow sending messages to parent\", ->\n    postmaster = Postmaster()\n\n    assert postmaster.sendToParent\n",
+          "type": "blob"
+        }
+      },
+      "distribution": {
+        "pixie": {
+          "path": "pixie",
+          "content": "module.exports = {\"version\":\"0.1.0\"};",
+          "type": "blob"
+        },
+        "main": {
+          "path": "main",
+          "content": "(function() {\n  var send;\n\n  module.exports = function(I, self) {\n    if (I == null) {\n      I = {};\n    }\n    if (self == null) {\n      self = {};\n    }\n    addEventListener(\"message\", function(event) {\n      var error, id, method, params, result, _ref;\n      if (event.source === opener) {\n        _ref = event.data, method = _ref.method, params = _ref.params, id = _ref.id;\n        try {\n          result = self[method].apply(self, params);\n          return send({\n            success: {\n              id: id,\n              result: result\n            }\n          });\n        } catch (_error) {\n          error = _error;\n          return send({\n            error: {\n              id: id,\n              result: error\n            }\n          });\n        }\n      }\n    });\n    addEventListener(\"unload\", function() {\n      return send({\n        status: \"unload\"\n      });\n    });\n    send({\n      status: \"ready\"\n    });\n    self.sendToParent = send;\n    return self;\n  };\n\n  send = function(data) {\n    return typeof opener !== \"undefined\" && opener !== null ? opener.postMessage(data, \"*\") : void 0;\n  };\n\n}).call(this);\n\n//# sourceURL=main.coffee",
+          "type": "blob"
+        },
+        "test/postmaster": {
+          "path": "test/postmaster",
+          "content": "(function() {\n  var Postmaster;\n\n  Postmaster = require(\"../main\");\n\n  describe(\"Postmaster\", function() {\n    return it(\"should allow sending messages to parent\", function() {\n      var postmaster;\n      postmaster = Postmaster();\n      return assert(postmaster.sendToParent);\n    });\n  });\n\n}).call(this);\n\n//# sourceURL=test/postmaster.coffee",
+          "type": "blob"
+        }
+      },
+      "progenitor": {
+        "url": "http://strd6.github.io/editor/"
+      },
+      "version": "0.1.0",
+      "entryPoint": "main",
+      "repository": {
+        "id": 15326478,
+        "name": "postmaster",
+        "full_name": "distri/postmaster",
+        "owner": {
+          "login": "distri",
+          "id": 6005125,
+          "avatar_url": "https://identicons.github.com/f90c81ffc1498e260c820082f2e7ca5f.png",
+          "gravatar_id": null,
+          "url": "https://api.github.com/users/distri",
+          "html_url": "https://github.com/distri",
+          "followers_url": "https://api.github.com/users/distri/followers",
+          "following_url": "https://api.github.com/users/distri/following{/other_user}",
+          "gists_url": "https://api.github.com/users/distri/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/distri/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/distri/subscriptions",
+          "organizations_url": "https://api.github.com/users/distri/orgs",
+          "repos_url": "https://api.github.com/users/distri/repos",
+          "events_url": "https://api.github.com/users/distri/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/distri/received_events",
+          "type": "Organization",
+          "site_admin": false
+        },
+        "private": false,
+        "html_url": "https://github.com/distri/postmaster",
+        "description": "Send and receive postMessage commands.",
+        "fork": false,
+        "url": "https://api.github.com/repos/distri/postmaster",
+        "forks_url": "https://api.github.com/repos/distri/postmaster/forks",
+        "keys_url": "https://api.github.com/repos/distri/postmaster/keys{/key_id}",
+        "collaborators_url": "https://api.github.com/repos/distri/postmaster/collaborators{/collaborator}",
+        "teams_url": "https://api.github.com/repos/distri/postmaster/teams",
+        "hooks_url": "https://api.github.com/repos/distri/postmaster/hooks",
+        "issue_events_url": "https://api.github.com/repos/distri/postmaster/issues/events{/number}",
+        "events_url": "https://api.github.com/repos/distri/postmaster/events",
+        "assignees_url": "https://api.github.com/repos/distri/postmaster/assignees{/user}",
+        "branches_url": "https://api.github.com/repos/distri/postmaster/branches{/branch}",
+        "tags_url": "https://api.github.com/repos/distri/postmaster/tags",
+        "blobs_url": "https://api.github.com/repos/distri/postmaster/git/blobs{/sha}",
+        "git_tags_url": "https://api.github.com/repos/distri/postmaster/git/tags{/sha}",
+        "git_refs_url": "https://api.github.com/repos/distri/postmaster/git/refs{/sha}",
+        "trees_url": "https://api.github.com/repos/distri/postmaster/git/trees{/sha}",
+        "statuses_url": "https://api.github.com/repos/distri/postmaster/statuses/{sha}",
+        "languages_url": "https://api.github.com/repos/distri/postmaster/languages",
+        "stargazers_url": "https://api.github.com/repos/distri/postmaster/stargazers",
+        "contributors_url": "https://api.github.com/repos/distri/postmaster/contributors",
+        "subscribers_url": "https://api.github.com/repos/distri/postmaster/subscribers",
+        "subscription_url": "https://api.github.com/repos/distri/postmaster/subscription",
+        "commits_url": "https://api.github.com/repos/distri/postmaster/commits{/sha}",
+        "git_commits_url": "https://api.github.com/repos/distri/postmaster/git/commits{/sha}",
+        "comments_url": "https://api.github.com/repos/distri/postmaster/comments{/number}",
+        "issue_comment_url": "https://api.github.com/repos/distri/postmaster/issues/comments/{number}",
+        "contents_url": "https://api.github.com/repos/distri/postmaster/contents/{+path}",
+        "compare_url": "https://api.github.com/repos/distri/postmaster/compare/{base}...{head}",
+        "merges_url": "https://api.github.com/repos/distri/postmaster/merges",
+        "archive_url": "https://api.github.com/repos/distri/postmaster/{archive_format}{/ref}",
+        "downloads_url": "https://api.github.com/repos/distri/postmaster/downloads",
+        "issues_url": "https://api.github.com/repos/distri/postmaster/issues{/number}",
+        "pulls_url": "https://api.github.com/repos/distri/postmaster/pulls{/number}",
+        "milestones_url": "https://api.github.com/repos/distri/postmaster/milestones{/number}",
+        "notifications_url": "https://api.github.com/repos/distri/postmaster/notifications{?since,all,participating}",
+        "labels_url": "https://api.github.com/repos/distri/postmaster/labels{/name}",
+        "releases_url": "https://api.github.com/repos/distri/postmaster/releases{/id}",
+        "created_at": "2013-12-20T00:42:15Z",
+        "updated_at": "2013-12-20T00:42:16Z",
+        "pushed_at": "2013-12-20T00:42:16Z",
+        "git_url": "git://github.com/distri/postmaster.git",
+        "ssh_url": "git@github.com:distri/postmaster.git",
+        "clone_url": "https://github.com/distri/postmaster.git",
+        "svn_url": "https://github.com/distri/postmaster",
+        "homepage": null,
+        "size": 0,
+        "stargazers_count": 0,
+        "watchers_count": 0,
+        "language": null,
+        "has_issues": true,
+        "has_downloads": true,
+        "has_wiki": true,
+        "forks_count": 0,
+        "mirror_url": null,
+        "open_issues_count": 0,
+        "forks": 0,
+        "open_issues": 0,
+        "watchers": 0,
+        "default_branch": "master",
+        "master_branch": "master",
+        "permissions": {
+          "admin": true,
+          "push": true,
+          "pull": true
+        },
+        "organization": {
+          "login": "distri",
+          "id": 6005125,
+          "avatar_url": "https://identicons.github.com/f90c81ffc1498e260c820082f2e7ca5f.png",
+          "gravatar_id": null,
+          "url": "https://api.github.com/users/distri",
+          "html_url": "https://github.com/distri",
+          "followers_url": "https://api.github.com/users/distri/followers",
+          "following_url": "https://api.github.com/users/distri/following{/other_user}",
+          "gists_url": "https://api.github.com/users/distri/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/distri/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/distri/subscriptions",
+          "organizations_url": "https://api.github.com/users/distri/orgs",
+          "repos_url": "https://api.github.com/users/distri/repos",
+          "events_url": "https://api.github.com/users/distri/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/distri/received_events",
+          "type": "Organization",
+          "site_admin": false
+        },
+        "network_count": 0,
+        "subscribers_count": 2,
+        "branch": "v0.1.0",
+        "defaultBranch": "master"
+      },
+      "dependencies": {}
     },
     "runtime": {
       "source": {

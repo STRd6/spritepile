@@ -38,13 +38,27 @@ junk.</p>
 
             </div>
             <div class="content"><pre><code class="lang-coffeescript">require <span class="string">"./setup"</span>
+Postmaster = require <span class="string">"postmaster"</span>
 
 transparent32x32 = <span class="string">"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAALUlEQVRYR+3QQREAAAABQfqXFsNnFTizzXk99+MAAQIECBAgQIAAAQIECBAgMBo/ACHo7lH9AAAAAElFTkSuQmCC"</span>
+
+<span class="comment"># TODO: Name new sprites</span>
 
 $(<span class="string">"body"</span>).append $ <span class="string">"&lt;button&gt;"</span>,
   text: <span class="string">"New Sprite"</span>
   click: -&gt;
     editSprite addSprite transparent32x32
+
+<span class="function"><span class="title">toJSON</span></span> = -&gt;
+  $(<span class="string">"img"</span>).get().reduce (output, img) -&gt;
+    output[img.title] = img.src
+
+    output
+  , {}
+
+<span class="comment"># External Interface</span>
+Postmaster {},
+  toJSON: toJSON
 
 packery = <span class="literal">null</span>
 container = document.querySelector(<span class="string">"body"</span>)
@@ -95,7 +109,6 @@ docReady -&gt;
         removeEventListener eventProcessor
 
       <span class="keyword">if</span> dataURL = event.data?.dataURL
-        <span class="comment"># TODO: Save to localStorage</span>
         img.src = dataURL
 
       <span class="keyword">if</span> event.data?.status <span class="keyword">is</span> <span class="string">"ready"</span>
@@ -104,14 +117,20 @@ docReady -&gt;
           self.on "change", -&gt;
             self.sendToParent
               dataURL: self.outputCanvas().toDataURL("image/png")
+
+          true
         """</span>, bare: <span class="literal">true</span>
 
   addEventListener <span class="string">"message"</span>, eventProcessor, <span class="literal">false</span>
 
-  pixelEditorWindow = window.open <span class="string">"http://strd6.github.io/pixel-editor/"</span>, <span class="string">""</span>, <span class="string">"width=640,height=480"</span>
+  pixelEditorWindow = window.open <span class="string">"http://strd6.github.io/pixel-editor/?2"</span>, <span class="string">""</span>, <span class="string">"width=640,height=480"</span>
 
+sendId = <span class="number">0</span>
 <span class="function"><span class="title">send</span></span> = (target, method, params...) -&gt;
+  console.log arguments
+
   target.postMessage
+    id: ++sendId
     method: method
     params: params
   , <span class="string">"*"</span>
