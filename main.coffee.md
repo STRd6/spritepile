@@ -7,13 +7,27 @@ junk.
 Edit a sprite by double clicking and opening a pixel editor in a sub-window.
 
     require "./setup"
+    Postmaster = require "postmaster"
 
     transparent32x32 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAALUlEQVRYR+3QQREAAAABQfqXFsNnFTizzXk99+MAAQIECBAgQIAAAQIECBAgMBo/ACHo7lH9AAAAAElFTkSuQmCC"
+
+    # TODO: Name new sprites
 
     $("body").append $ "<button>",
       text: "New Sprite"
       click: ->
         editSprite addSprite transparent32x32
+
+    toJSON = ->
+      $("img").get().reduce (output, img) ->
+        output[img.title] = img.src
+
+        output
+      , {}
+
+    # External Interface
+    Postmaster {},
+      toJSON: toJSON
 
     packery = null
     container = document.querySelector("body")
@@ -64,7 +78,6 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
             removeEventListener eventProcessor
 
           if dataURL = event.data?.dataURL
-            # TODO: Save to localStorage
             img.src = dataURL
 
           if event.data?.status is "ready"
@@ -73,14 +86,20 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
               self.on "change", ->
                 self.sendToParent
                   dataURL: self.outputCanvas().toDataURL("image/png")
+
+              true
             """, bare: true
 
       addEventListener "message", eventProcessor, false
 
-      pixelEditorWindow = window.open "http://strd6.github.io/pixel-editor/", "", "width=640,height=480"
+      pixelEditorWindow = window.open "http://strd6.github.io/pixel-editor/?2", "", "width=640,height=480"
 
+    sendId = 0
     send = (target, method, params...) ->
+      console.log arguments
+
       target.postMessage
+        id: ++sendId
         method: method
         params: params
       , "*"
