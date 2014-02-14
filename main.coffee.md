@@ -11,12 +11,11 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
 
     transparent32x32 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAALUlEQVRYR+3QQREAAAABQfqXFsNnFTizzXk99+MAAQIECBAgQIAAAQIECBAgMBo/ACHo7lH9AAAAAElFTkSuQmCC"
 
-    # TODO: Name new sprites
-
     $("body").append $ "<button>",
       text: "New Sprite"
       click: ->
-        editSprite addSprite transparent32x32
+        if name = prompt "Image name:"
+          editSprite addSprite transparent32x32, name
 
     toJSON = ->
       $("img").get().reduce (output, img) ->
@@ -25,9 +24,12 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
         output
       , {}
 
-    # External Interface
-    Postmaster {},
-      toJSON: toJSON
+    removeAll = ->
+      packery.remove(packery.getItemElements())
+
+    addFromData = (data) ->
+      Object.keys(data).forEach (name) ->
+        addSprite data[name], name
 
     packery = null
     container = document.querySelector("body")
@@ -60,14 +62,17 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
       packery = new Packery container,
         columnWidth: 40
         rowHeight: 40
-        item: "img"
+        itemSelector: "img"
         stamp: "button"
 
-      sprites = require "./images"
-      Object.keys(sprites).forEach (name) ->
-        addSprite sprites[name], name
+      addFromData(require "./images")
 
-    # TODO: Close spawned windows when closing parent
+    spawnedWindows = []
+
+    # Close spawned windows when closing parent
+    $(window).on "unload", ->
+      spawnedWindows.forEach (window) ->
+        window.close()
 
     editSprite = (img) ->
       eventProcessor = (event) ->
@@ -75,6 +80,7 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
           console.log event
 
           if event.data?.status is "unload"
+            # TODO: remove window from list of spawned windows
             removeEventListener eventProcessor
 
           if dataURL = event.data?.dataURL
@@ -92,7 +98,9 @@ Edit a sprite by double clicking and opening a pixel editor in a sub-window.
 
       addEventListener "message", eventProcessor, false
 
-      pixelEditorWindow = window.open "http://strd6.github.io/pixel-editor/?2", "", "width=640,height=480"
+      pixelEditorWindow = window.open "http://strd6.github.io/pixel-editor/", "", "width=640,height=480"
+
+      spawnedWindows.push pixelEditorWindow
 
     sendId = 0
     send = (target, method, params...) ->
